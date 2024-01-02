@@ -24,7 +24,8 @@ const client = new SESClient({ region: "eu-west-1" });
 export const handler: SNSHandler = async (event: any) => {
     console.log("Event ", event);
     for (const record of event.Records) {
-        const snsMessage = JSON.parse(record.sns.Message);
+        console.log("record.sns", record.Sns)
+        const snsMessage = JSON.parse(record.Sns.Message);
 
         if (snsMessage.Records) {
             console.log("Message body ", JSON.stringify(snsMessage));

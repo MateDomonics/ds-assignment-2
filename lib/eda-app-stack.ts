@@ -71,7 +71,11 @@ export class EDAAppStack extends cdk.Stack {
       s3.EventType.OBJECT_CREATED,
       new s3n.SnsDestination(newImageTopic)  // Changed
     );
-
+    
+    newImageTopic.addSubscription(
+      new subs.SqsSubscription(imageProcessQueue)
+    );
+    
     const newImageEventSource = new events.SqsEventSource(imageProcessQueue, {
       batchSize: 5,
       maxBatchingWindow: cdk.Duration.seconds(10),
@@ -99,7 +103,7 @@ export class EDAAppStack extends cdk.Stack {
       })
     );
 
-      imageTable.grantReadWriteData(processImageFn)
+    imageTable.grantReadWriteData(processImageFn)
 
     // Output
 
