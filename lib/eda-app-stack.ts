@@ -17,7 +17,7 @@ export class EDAAppStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    const reviewsTable = new dynamodb.Table(this, "imagesTable", {
+    const imageTable = new dynamodb.Table(this, "imagesTable", {
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
       partitionKey: { name: "ImageName", type: dynamodb.AttributeType.STRING },
       removalPolicy: cdk.RemovalPolicy.DESTROY,
@@ -51,6 +51,10 @@ export class EDAAppStack extends cdk.Stack {
         entry: `${__dirname}/../lambdas/processImage.ts`,
         timeout: cdk.Duration.seconds(15),
         memorySize: 128,
+        environment: {
+          TABLE_NAME: imageTable.tableName,
+          REGION: "eu-west-1"
+        }
       }
     );
 
@@ -94,6 +98,8 @@ export class EDAAppStack extends cdk.Stack {
         resources: ["*"],
       })
     );
+
+      imageTable.grantReadWriteData(processImageFn)
 
     // Output
 
