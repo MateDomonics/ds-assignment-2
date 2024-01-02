@@ -1,8 +1,8 @@
 ## EDA Assignment - Distributed Systems.
 
-__Name:__ ....your name .....
+__Name:__ Máté Domonics
 
-__YouTube Demo link__ - [The URL of your demonstration of the app.]
+__YouTube Demo link__ - https://youtu.be/uo0JSJfNNqg
 
 [ Note: The video must include an audio.]
 
@@ -10,33 +10,20 @@ __YouTube Demo link__ - [The URL of your demonstration of the app.]
 
 [ List the Lambda functions in this phase's architecture and state their working status.]
 
-, e.g.
-
 + Confirmation Mailer - Fully implemented.
 + Rejection Mailer - Fully implemented.
-+ Process Image - Partially implemented
++ Process Image - Fully implemented
 
 ### Phase 2 (if relevant).
 
 [ List the Lambda functions in this phase's architecture and state their working status.]
 
- e.g.
+- Not implemented.
 
-+ Confirmation Mailer - Fully implemented.
-+ Rejection Mailer - Fully implemented.
-+ Process Image - Fully implemented
-+ Process Delete - Partially implemented.
-+ Update Table - Not implemented.
 
 ### Phase 3 (if relevant).
 
 [ List the Lambda functions in this phase's architecture and state their working status.]
 
- e.g.
-
-+ Confirmation Mailer - Fully implemented.
-+ Rejection Mailer - Fully implemented.
-+ Process Image - Fully implemented
-+ etc
-+ etc
+- Not implemented.
 
