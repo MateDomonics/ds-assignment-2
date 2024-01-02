@@ -9,6 +9,8 @@ import * as sns from "aws-cdk-lib/aws-sns";
 import * as subs from "aws-cdk-lib/aws-sns-subscriptions";
 import * as iam from "aws-cdk-lib/aws-iam";
 import * as dynamodb from "aws-cdk-lib/aws-dynamodb"
+import { Duration, RemovalPolicy } from "aws-cdk-lib";
+import { SqsEventSource } from "aws-cdk-lib/aws-lambda-event-sources";
 
 import { Construct } from "constructs";
 // import * as sqs from 'aws-cdk-lib/aws-sqs';
@@ -32,7 +34,15 @@ export class EDAAppStack extends cdk.Stack {
 
     // Integration infrastructure
 
+    const deadLetterQueue = new sqs.Queue(this, "dead-letter-q", {
+      retentionPeriod: Duration.minutes(30),
+    });
+
     const imageProcessQueue = new sqs.Queue(this, "img-created-queue", {
+      deadLetterQueue: {
+        queue: deadLetterQueue,
+        maxReceiveCount: 1
+      },
       receiveMessageWaitTime: cdk.Duration.seconds(10),
     });
 
@@ -65,6 +75,13 @@ export class EDAAppStack extends cdk.Stack {
       entry: `${__dirname}/../lambdas/mailer.ts`,
     });
 
+    const deadLetterMailerFn = new lambdanode.NodejsFunction(this, "dead-letter-mailer-function", {
+      runtime: lambda.Runtime.NODEJS_16_X,
+      memorySize: 1024,
+      timeout: cdk.Duration.seconds(3),
+      entry: `${__dirname}/../lambdas/rejectionMailer.ts`,
+    });
+
     // Event triggers
 
     imagesBucket.addEventNotification(
@@ -83,6 +100,13 @@ export class EDAAppStack extends cdk.Stack {
 
     processImageFn.addEventSource(newImageEventSource);
 
+    deadLetterMailerFn.addEventSource(
+      new SqsEventSource(deadLetterQueue, {
+        maxBatchingWindow: Duration.seconds(5),
+        maxConcurrency: 2,
+      })
+    );
+
     //https://rahullokurte.com/how-to-use-aws-sns-with-lambda-subscriptions-in-publisher-subscriber-messaging-systems-using-cdk
     newImageTopic.addSubscription(new subs.LambdaSubscription(mailerFn))
 
@@ -92,6 +116,18 @@ export class EDAAppStack extends cdk.Stack {
     imagesBucket.grantRead(processImageFn);
 
     mailerFn.addToRolePolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: [
+          "ses:SendEmail",
+          "ses:SendRawEmail",
+          "ses:SendTemplatedEmail",
+        ],
+        resources: ["*"],
+      })
+    );
+
+    deadLetterMailerFn.addToRolePolicy(
       new iam.PolicyStatement({
         effect: iam.Effect.ALLOW,
         actions: [
